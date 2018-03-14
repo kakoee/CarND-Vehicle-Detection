@@ -55,21 +55,21 @@ def extract_features(imgs, color_space='RGB', spatial_size=(32, 32),
     for file in imgs:
         file_features = []
         # Read in each one by one
-        #image = mpimg.imread(file) returns RGB
-        image = cv2.imread(file)        # returns BGR
+        image = mpimg.imread(file) #returns RGB . for png returns [0..1]. 
+        #image = cv2.imread(file)        # returns BGR
         # apply color conversion if other than 'RGB'
         if color_space != 'RGB':
             if color_space == 'HSV':
-                feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
             elif color_space == 'LUV':                        
-                feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2LUV)
+                feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2LUV)
             elif color_space == 'HLS':                        
-                feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+                feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
             elif color_space == 'YUV':                        
-                feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+                feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2YUV)
             elif color_space == 'YCrCb':                      
-                feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
-        else: feature_image = np.copy(image)      
+                feature_image = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+        else: feature_image = np.copy(image) 
 
         if spatial_feat == True:
             spatial_features = bin_spatial(feature_image, size=spatial_size)
@@ -108,17 +108,19 @@ def single_img_features(img, color_space='RGB', spatial_size=(32, 32),
     img_features = []
     #2) Apply color conversion if other than 'RGB'
     if color_space != 'RGB':
-        if color_space == 'HSV':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        elif color_space == 'LUV':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
-        elif color_space == 'HLS':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
-        elif color_space == 'YUV':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
-        elif color_space == 'YCrCb':
-            feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
-    else: feature_image = np.copy(img)      
+            if color_space == 'HSV':
+                feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+            elif color_space == 'LUV':                        
+                feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
+            elif color_space == 'HLS':                        
+                feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+            elif color_space == 'YUV':                        
+                feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+            elif color_space == 'YCrCb':                      
+                feature_image = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+    else: 
+            feature_image = np.copy(img)      
+
     #3) Compute spatial features if flag is set
     if spatial_feat == True:
         spatial_features = bin_spatial(feature_image, size=spatial_size)
