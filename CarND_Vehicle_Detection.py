@@ -123,7 +123,7 @@ def process_frame(myimg,cspace):
     windows = slide_window(myimg, x_start_stop=[None, None], y_start_stop=y_start_stop, 
                     xy_window=(96, 96), xy_overlap=(0.5, 0.5))
 
-    hot_windows = search_windows(myimg, windows, svc, X_scaler, color_space=color_space, 
+    hot_windows = search_windows(myimg, windows, svc, X_scaler, color_space=cspace, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
                         orient=orient, pix_per_cell=pix_per_cell, 
                         cell_per_block=cell_per_block, 
@@ -140,7 +140,7 @@ image = mpimg.imread('test_images/test6.jpg')
 
 image = image.astype(np.float32)/255
 
-res_image= process_frame(image)
+res_image= process_frame(image,color_space)
 
 
 # Uncomment the following line if you extracted training
