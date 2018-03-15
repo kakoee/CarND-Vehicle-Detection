@@ -57,7 +57,7 @@ for image in images_cars_KITTI:
 
 print(len(cars),len(notcars))
     
-color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 9  # HOG orientations
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
@@ -67,7 +67,7 @@ hist_bins = 16    # Number of histogram bins
 spatial_feat = True # Spatial features on or off
 hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
-y_start_stop = [400, 660] # Min and max in y to search in slide_window()
+y_start_stop = [380, 660] # Min and max in y to search in slide_window()
 
 car_features = extract_features(cars, color_space=color_space, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
@@ -116,14 +116,17 @@ print('Test Accuracy of SVC = ', round(svc.score(X_test, y_test), 4))
 
 def process_frame(myimg,cspace):
 
+    
     if(cspace in {'RGB','YCrCb'}):
-        myimg=myimg.astype(np.float32)/255
-
-    draw_image = np.copy(myimg)
-    windows = slide_window(myimg, x_start_stop=[None, None], y_start_stop=y_start_stop, 
+        myimg1=myimg.astype(np.float32)/255
+    else:
+        myimg1=np.copy(myimg)
+        
+    draw_image = np.copy(myimg1)
+    windows = slide_window(myimg1, x_start_stop=[None, None], y_start_stop=y_start_stop, 
                     xy_window=(96, 96), xy_overlap=(0.5, 0.5))
 
-    hot_windows = search_windows(myimg, windows, svc, X_scaler, color_space=cspace, 
+    hot_windows = search_windows(myimg1, windows, svc, X_scaler, color_space=cspace, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
                         orient=orient, pix_per_cell=pix_per_cell, 
                         cell_per_block=cell_per_block, 
@@ -136,18 +139,19 @@ def process_frame(myimg,cspace):
 
 image = mpimg.imread('test_images/test6.jpg')
 
-
-
 image = image.astype(np.float32)/255
 
 res_image= process_frame(image,color_space)
-
 
 # Uncomment the following line if you extracted training
 # data from .png images (scaled 0 to 1 by mpimg) and the
 # image you are searching is a .jpg (scaled 0 to 255)
 image = image.astype(np.float32)/255
 
-
 plt.imsave("output_images/test6_window.jpg",res_image)
+
+
+
+
+
     
