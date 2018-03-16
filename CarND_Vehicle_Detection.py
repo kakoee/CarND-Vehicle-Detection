@@ -196,12 +196,12 @@ plt.imsave("output_images/test6_window.jpg",res_image)
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
-video_name='test_video' 
+video_name='project_video' 
 #'test_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
-    clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,5)
+    clip1 = VideoFileClip(video_name+".mp4").subclip(0,5)
     white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 
