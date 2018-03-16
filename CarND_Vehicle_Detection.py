@@ -134,8 +134,9 @@ scales=[1,1.5,2]
   
 
 frame=0
-heat = []
-heat_threshold=5
+heat_zero = []
+heat_frames=[0,0,0,0,0]
+heat_threshold=12
 first_frame=True
  
     
@@ -157,17 +158,26 @@ def process_frame_1(myimg):
 
 def process_frame_2(myimg):
     global frame
-    global heat
+    global heat_zero
     global first_frame
+    global heat_frames
     if(first_frame):
         img_tosearch = myimg[ystart:ystop,:,:]
-        heat = np.zeros_like(img_tosearch[:,:,0]).astype(np.float)
+        heat_zero = np.zeros_like(img_tosearch[:,:,0]).astype(np.float)
+        heat_frames= [heat_zero,heat_zero,heat_zero,heat_zero,heat_zero]
 
     
-    new_heat,out_img = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold,heat)                      
+    new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold,heat_zero)                      
 
-    if(frame%5==0):
-        heat[(heat <= 4*heat_threshold) | (new_heat<=heat_threshold)] = 0
+    #if(frame%1==0):
+    #    heat[(heat <= 4*heat_threshold) | (new_heat<=heat_threshold)] = 0
+    
+    heat_frames[frame%5] = new_heat
+    heat_sum = heat_zero
+    for heat_frame in heat_frames:
+        heat_sum += heat_frame #heat_frames[0] + heat_frames[1] + heat_frames[2] + heat_frames[3] + heat_frames[4]
+    heat_sum = apply_threshold(heat_sum,heat_threshold*4)
+    out_img=draw_hit_map(myimg,ystart,xstart,heat_sum)
     
     first_frame=False
     frame+=1

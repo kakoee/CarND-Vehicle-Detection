@@ -232,9 +232,9 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
         # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
         window = 64
         nblocks_per_window = (window // pix_per_cell) - cell_per_block + 1
-        cells_per_step = 0.5  # Instead of overlap, define how many cells to step
-        nxsteps = (nxblocks - nblocks_per_window) // cells_per_step + 1
-        nysteps = (nyblocks - nblocks_per_window) // cells_per_step + 1
+        cells_per_step = 1  # Instead of overlap, define how many cells to step
+        nxsteps = (int)((nxblocks - nblocks_per_window) // cells_per_step + 1)
+        nysteps = (int)((nyblocks - nblocks_per_window) // cells_per_step + 1)
         
         # Compute individual channel HOG features for the entire image
         hog1 = get_hog_features(ch1, orient, pix_per_cell, cell_per_block, feature_vec=False)
@@ -246,8 +246,8 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
     
         for xb in range(nxsteps):
             for yb in range(nysteps):
-                ypos = yb*cells_per_step
-                xpos = xb*cells_per_step
+                ypos = (int)(yb*cells_per_step)
+                xpos = (int)(xb*cells_per_step)
                 # Extract HOG for this patch
                 hog_feat1 = hog1[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
                 hog_feat2 = hog2[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
@@ -270,7 +270,7 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                 decision_func = svc.decision_function(test_features)
                 test_prediction = svc.predict(test_features)
                 
-                if ((test_prediction == 1) and (abs(decision_func)>0.98)):
+                if ((test_prediction == 1) and (abs(decision_func)>0.99)):
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)
                     win_draw = np.int(window*scale)
@@ -279,24 +279,27 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                 #cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,0,255),6) 
     
     # Add heat to each box in box list
-    #print(len(box_list))
-    heat = add_heat(heat,box_list)
+    #heat = add_heat(heat,box_list)
         
     # Apply threshold to help remove false positives
-    heat = apply_threshold(heat,heat_threshold)
+    #heat = apply_threshold(heat,heat_threshold)
     
     new_heat = add_heat(new_heat,box_list)
     new_heat = apply_threshold(new_heat,heat_threshold)
     
-    # Visualize the heatmap when displaying    
+    # Visualize the heatmap when displaying
+    
+ 
+    return new_heat#,draw_img    
+  
+def draw_hit_map(myimg,ystart,xstart,heat):
     heatmap = np.clip(heat, 0, 255)
     
     # Find final boxes from heatmap using label function
     labels = label(heatmap)
-    draw_img = draw_labeled_bboxes(draw_img, ystart,xstart, labels)
+    draw_img = draw_labeled_bboxes(myimg, ystart,xstart, labels)
+    return draw_img
 
-    return new_heat,draw_img    
-    
     
 # Define a function that takes an image,
 # start and stop positions in both x and y, 
