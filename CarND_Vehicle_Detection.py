@@ -140,7 +140,7 @@ heat_threshold=12
 first_frame=True
  
     
-def process_frame_1(myimg):
+def process_frame_old(myimg):
 
     draw_image = np.copy(myimg)
     windows = slide_window(myimg, x_start_stop=[None, None], y_start_stop=y_start_stop, 
@@ -156,7 +156,7 @@ def process_frame_1(myimg):
     window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)                    
     return window_img
 
-def process_frame_2(myimg):
+def process_frame(myimg):
     global frame
     global heat_zero
     global first_frame
@@ -169,13 +169,11 @@ def process_frame_2(myimg):
     
     new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold,heat_zero)                      
 
-    #if(frame%1==0):
-    #    heat[(heat <= 4*heat_threshold) | (new_heat<=heat_threshold)] = 0
     
     heat_frames[frame%5] = new_heat
     heat_sum = heat_zero
     for heat_frame in heat_frames:
-        heat_sum += heat_frame #heat_frames[0] + heat_frames[1] + heat_frames[2] + heat_frames[3] + heat_frames[4]
+        heat_sum += heat_frame 
     heat_sum = apply_threshold(heat_sum,heat_threshold*4)
     out_img=draw_hit_map(myimg,ystart,xstart,heat_sum)
     
@@ -187,11 +185,9 @@ def process_frame_2(myimg):
     
 image = mpimg.imread('test_images/test6.jpg')
 
-res_image= process_frame_2(image)
+res_image= process_frame(image)
 
-# Uncomment the following line if you extracted training
-# data from .png images (scaled 0 to 1 by mpimg) and the
-# image you are searching is a .jpg (scaled 0 to 255)
+
 #image = image.astype(np.float32)/255
 
 plt.imsave("output_images/test6_window.jpg",res_image)
@@ -200,12 +196,13 @@ plt.imsave("output_images/test6_window.jpg",res_image)
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
-video_name='test_video'
+video_name='project_video' 
+#'test_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
     clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,5)
-    white_clip = clip1.fl_image(process_frame_2)
+    white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 
 
