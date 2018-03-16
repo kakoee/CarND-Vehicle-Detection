@@ -19,7 +19,7 @@ import pickle
 ## debug
 debug_train=0
 debug_save_model =1
-debug_read_video=0
+debug_read_video=1
 ##
 
 
@@ -116,8 +116,8 @@ if(debug_train==1):
     print('Feature vector length:', len(X_train[0]))
     # Use SVM with gridsearch 
     parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-    svr = svm.SVC()
-    svc = GridSearchCV(svr, parameters)
+    svr = svm.SVC(kernel='rbf',C=10)
+    svc = svr#GridSearchCV(svr, parameters)
     #svc = LinearSVC()
     # Check the training time for the SVC
     t=time.time()
@@ -147,7 +147,7 @@ scales=[1,1.5,2]
 frame=0
 heat_zero = []
 heat_frames=[0,0,0,0,0]
-heat_threshold=3
+heat_threshold=2
 first_frame=True
 
 
@@ -202,27 +202,28 @@ def process_frame(myimg):
     frame+=1
     return out_img
     
-    
-images_test = glob.glob('./test_images/*.jpg')
-import os
-for image_f in images_test:
-    first_frame=True
-    image = mpimg.imread(image_f)
-    res_image= process_image(image)
-    #image = image.astype(np.float32)/255
-    filename=os.path.basename(image_f)
-    plt.imsave("output_images/"+filename,res_image)
+
+if(debug_read_video==0):    
+    images_test = glob.glob('./test_images/*.jpg')
+    import os
+    for image_f in images_test:
+        first_frame=True
+        image = mpimg.imread(image_f)
+        res_image= process_image(image)
+        #image = image.astype(np.float32)/255
+        filename=os.path.basename(image_f)
+        plt.imsave("output_images/"+filename,res_image)
 
 ## run on video
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
-video_name='project_video' 
+video_name='test_video'#'project_video' 
 #'test_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
-    clip1 = VideoFileClip(video_name+".mp4").subclip(9,13)
+    clip1 = VideoFileClip(video_name+".mp4").subclip(0,2)
     white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 

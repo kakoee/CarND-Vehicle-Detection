@@ -271,7 +271,8 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                 test_prediction = svc.predict(test_features)
                 
                 
-                if ((test_prediction == 1)):
+                if ((test_prediction == 1) and decision_func>0.4):
+                    #print(decision_func)
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)
                     win_draw = np.int(window*scale)
