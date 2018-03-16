@@ -5,9 +5,11 @@ import cv2
 import glob
 import time
 from sklearn.svm import LinearSVC
+from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from skimage.feature import hog
 from all_functions import *
+from sklearn.model_selection import GridSearchCV
 # NOTE: the next import is only valid for scikit-learn version <= 0.17
 # for scikit-learn >= 0.18 use:
 from sklearn.model_selection import train_test_split
@@ -17,7 +19,7 @@ import pickle
 ## debug
 debug_train=0
 debug_save_model =1
-debug_read_video=1
+debug_read_video=0
 ##
 
 
@@ -55,8 +57,14 @@ np.random.shuffle(notcars)
 
 cars=cars[0:(int)(len(cars)/2)]
  
+#custom_train
+images_cars_custom = glob.glob('./test_images/Train*')
+for image in images_cars_custom:
+    cars.append(image)
+
+
  
-color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+color_space = 'HSV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 11  # HOG orientations
 pix_per_cell = 16 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
@@ -66,7 +74,7 @@ hist_bins = 16    # Number of histogram bins
 spatial_feat = True # Spatial features on or off
 hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
-y_start_stop = [380, 660] # Min and max in y to search in slide_window()
+y_start_stop = [250, 700] # Min and max in y to search in slide_window()
 xstart=0
 
 model_filename = 'finalized_model.sav'
@@ -106,8 +114,11 @@ if(debug_train==1):
     print('Using:',orient,'orientations',pix_per_cell,
         'pixels per cell and', cell_per_block,'cells per block')
     print('Feature vector length:', len(X_train[0]))
-    # Use a linear SVC 
-    svc = LinearSVC()
+    # Use SVM with gridsearch 
+    parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+    svr = svm.SVC()
+    svc = GridSearchCV(svr, parameters)
+    #svc = LinearSVC()
     # Check the training time for the SVC
     t=time.time()
     svc.fit(X_train, y_train)
@@ -136,8 +147,18 @@ scales=[1,1.5,2]
 frame=0
 heat_zero = []
 heat_frames=[0,0,0,0,0]
-heat_threshold=12
+heat_threshold=3
 first_frame=True
+
+
+def process_image(myimg):
+    
+    new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold)                      
+
+  
+    out_img=draw_hit_map(myimg,ystart,xstart,new_heat)
+    
+    return out_img
  
     
 def process_frame_old(myimg):
@@ -182,15 +203,15 @@ def process_frame(myimg):
     return out_img
     
     
-    
-image = mpimg.imread('test_images/test6.jpg')
-
-res_image= process_frame(image)
-
-
-#image = image.astype(np.float32)/255
-
-plt.imsave("output_images/test6_window.jpg",res_image)
+images_test = glob.glob('./test_images/*.jpg')
+import os
+for image_f in images_test:
+    first_frame=True
+    image = mpimg.imread(image_f)
+    res_image= process_image(image)
+    #image = image.astype(np.float32)/255
+    filename=os.path.basename(image_f)
+    plt.imsave("output_images/"+filename,res_image)
 
 ## run on video
 # Import everything needed to edit/save/watch video clips
@@ -201,7 +222,7 @@ video_name='project_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
-    clip1 = VideoFileClip(video_name+".mp4").subclip(0,5)
+    clip1 = VideoFileClip(video_name+".mp4").subclip(9,13)
     white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 
