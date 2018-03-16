@@ -192,7 +192,7 @@ def draw_labeled_bboxes(img, ystart,xstart, labels):
  
     
 # Define a single function that can extract features using hog sub-sampling and make predictions
-def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold,heat):
+def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold):
     
     draw_img = np.copy(img)
     #img = img.astype(np.float32)/255
@@ -287,10 +287,7 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
     new_heat = add_heat(new_heat,box_list)
     new_heat = apply_threshold(new_heat,heat_threshold)
     
-    # Visualize the heatmap when displaying
-    
- 
-    return new_heat#,draw_img    
+    return new_heat   
   
 def draw_hit_map(myimg,ystart,xstart,heat):
     heatmap = np.clip(heat, 0, 255)

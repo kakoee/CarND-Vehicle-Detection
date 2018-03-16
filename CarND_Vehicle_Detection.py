@@ -167,7 +167,7 @@ def process_frame(myimg):
         heat_frames= [heat_zero,heat_zero,heat_zero,heat_zero,heat_zero]
 
     
-    new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold,heat_zero)                      
+    new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold)                      
 
     
     heat_frames[frame%5] = new_heat
