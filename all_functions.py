@@ -267,11 +267,11 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                 # Scale features and make a prediction
                 test_features = X_scaler.transform(np.hstack((spatial_features, hist_features, hog_features)).reshape(1, -1))    
                 #test_features = X_scaler.transform(np.hstack((shape_feat, hist_feat)).reshape(1, -1))  
-                #decision_func = svc.decision_function(test_features)
+                decision_func = svc.decision_function(test_features)
                 test_prediction = svc.predict(test_features)
                 
                 
-                if ((test_prediction == 1)):
+                if ((test_prediction == 1) and decision_func>0.9):
                     #print(decision_func)
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)

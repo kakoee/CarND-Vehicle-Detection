@@ -74,7 +74,7 @@ hist_bins = 16    # Number of histogram bins
 spatial_feat = True # Spatial features on or off
 hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
-y_start_stop = [250, 700] # Min and max in y to search in slide_window()
+y_start_stop = [350, 700] # Min and max in y to search in slide_window()
 xstart=0
 
 model_filename = 'finalized_model.sav'
@@ -115,10 +115,10 @@ if(debug_train==1):
         'pixels per cell and', cell_per_block,'cells per block')
     print('Feature vector length:', len(X_train[0]))
     # Use SVM with gridsearch 
-    parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-    svr = svm.SVC(kernel='rbf',C=10)
-    svc = svr#GridSearchCV(svr, parameters)
-    #svc = LinearSVC()
+    #parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+    #svr = svm.SVC(kernel='rbf',C=10)
+    #svc = svr#GridSearchCV(svr, parameters)
+    svc = LinearSVC()
     # Check the training time for the SVC
     t=time.time()
     svc.fit(X_train, y_train)
@@ -147,7 +147,7 @@ scales=[1,1.5,2]
 frame=0
 heat_zero = []
 heat_frames=[0,0,0,0,0]
-heat_threshold=2
+heat_threshold=4
 first_frame=True
 
 
@@ -161,7 +161,7 @@ def process_image(myimg):
     return out_img
  
     
-def process_frame_old(myimg):
+def process_image_2(myimg):
 
     draw_image = np.copy(myimg)
     windows = slide_window(myimg, x_start_stop=[None, None], y_start_stop=y_start_stop, 
@@ -185,21 +185,29 @@ def process_frame(myimg):
     if(first_frame):
         img_tosearch = myimg[ystart:ystop,:,:]
         heat_zero = np.zeros_like(img_tosearch[:,:,0]).astype(np.float)
-        heat_frames= [heat_zero,heat_zero,heat_zero,heat_zero,heat_zero]
+        heat_frames= np.array([heat_zero]*10)
+        #[heat_zero,heat_zero,heat_zero,heat_zero,heat_zero,heat_zero,heat_zero,heat_zero,heat_zero,heat_zero]
 
     
     new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold)                      
 
     
-    heat_frames[frame%5] = new_heat
+    heat_frames[frame%10] = new_heat
     heat_sum = heat_zero
-    for heat_frame in heat_frames:
-        heat_sum += heat_frame 
-    heat_sum = apply_threshold(heat_sum,heat_threshold*4)
+    #for heat_frame in heat_frames:
+    #heat_sum = heat_frames[0] + heat_frames[1] + heat_frames[2] + heat_frames[3] + heat_frames[4] + heat_frames[5] + \
+                #heat_frames[6] + heat_frames[7] + heat_frames[8] + heat_frames[9] 
+                
+    heat_sum = np.sum(heat_frames, axis=0)
+    heat_sum = apply_threshold(heat_sum,heat_threshold*5)
     out_img=draw_hit_map(myimg,ystart,xstart,heat_sum)
+    #out_img=draw_hit_map(myimg,ystart,xstart,new_heat)
     
     first_frame=False
     frame+=1
+    if(frame==10):
+        frame=0
+    
     return out_img
     
 
@@ -218,12 +226,12 @@ if(debug_read_video==0):
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
-video_name='test_video'#'project_video' 
+video_name='project_video'#'project_video' 
 #'test_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
-    clip1 = VideoFileClip(video_name+".mp4").subclip(0,2)
+    clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,32)
     white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 
