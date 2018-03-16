@@ -11,19 +11,14 @@ from all_functions import *
 # NOTE: the next import is only valid for scikit-learn version <= 0.17
 # for scikit-learn >= 0.18 use:
 from sklearn.model_selection import train_test_split
+import pickle
 #from sklearn.cross_validation import train_test_split
 
-
-x_png=mpimg.imread("./training/non-vehicles/GTI/image2.png")
-print("png",np.min(x_png),np.max(x_png))
-hsv_png = cv2.cvtColor(x_png, cv2.COLOR_RGB2HSV)
-print("png_cv2",np.min(hsv_png),np.max(hsv_png))
-
-jpg = mpimg.imread('./test_images/test6.jpg')
-print("jpg",np.min(jpg),np.max(jpg))
-hsv_jpg = cv2.cvtColor(jpg, cv2.COLOR_RGB2HSV)
-print("jpg_cv2",np.min(hsv_jpg),np.max(hsv_jpg))
-
+## debug
+debug_train=0
+debug_save_model =1
+debug_read_video=1
+##
 
 
 
@@ -55,11 +50,15 @@ for image in images_cars_MiddleClose:
 for image in images_cars_KITTI:
     cars.append(image)
 
-print(len(cars),len(notcars))
-    
-color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-orient = 9  # HOG orientations
-pix_per_cell = 8 # HOG pixels per cell
+np.random.shuffle(cars) 
+np.random.shuffle(notcars)
+
+cars=cars[0:(int)(len(cars)/2)]
+ 
+ 
+color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 11  # HOG orientations
+pix_per_cell = 16 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
 hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
 spatial_size = (16, 16) # Spatial binning dimensions
@@ -68,65 +67,85 @@ spatial_feat = True # Spatial features on or off
 hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
 y_start_stop = [380, 660] # Min and max in y to search in slide_window()
+xstart=0
 
-car_features = extract_features(cars, color_space=color_space, 
-                        spatial_size=spatial_size, hist_bins=hist_bins, 
-                        orient=orient, pix_per_cell=pix_per_cell, 
-                        cell_per_block=cell_per_block, 
-                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
-                        hist_feat=hist_feat, hog_feat=hog_feat)
-notcar_features = extract_features(notcars, color_space=color_space, 
-                        spatial_size=spatial_size, hist_bins=hist_bins, 
-                        orient=orient, pix_per_cell=pix_per_cell, 
-                        cell_per_block=cell_per_block, 
-                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
-                        hist_feat=hist_feat, hog_feat=hog_feat)
+model_filename = 'finalized_model.sav'
+scaler_filename = 'finalized_scaler.std'
 
-# Create an array stack of feature vectors
-X = np.vstack((car_features, notcar_features)).astype(np.float64)
 
-# Define the labels vector
-y = np.hstack((np.ones(len(car_features)), np.zeros(len(notcar_features))))
-
-# Split up data into randomized training and test sets
-rand_state = np.random.randint(0, 100)
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=rand_state)
+if(debug_train==1):
+    car_features = extract_features(cars, color_space=color_space, 
+                            spatial_size=spatial_size, hist_bins=hist_bins, 
+                            orient=orient, pix_per_cell=pix_per_cell, 
+                            cell_per_block=cell_per_block, 
+                            hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                            hist_feat=hist_feat, hog_feat=hog_feat)
+    notcar_features = extract_features(notcars, color_space=color_space, 
+                            spatial_size=spatial_size, hist_bins=hist_bins, 
+                            orient=orient, pix_per_cell=pix_per_cell, 
+                            cell_per_block=cell_per_block, 
+                            hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                            hist_feat=hist_feat, hog_feat=hog_feat)
     
-# Fit a per-column scaler
-X_scaler = StandardScaler().fit(X_train)
-# Apply the scaler to X
-X_train = X_scaler.transform(X_train)
-X_test = X_scaler.transform(X_test)
+    # Create an array stack of feature vectors
+    X = np.vstack((car_features, notcar_features)).astype(np.float64)
     
-
-print('Using:',orient,'orientations',pix_per_cell,
-    'pixels per cell and', cell_per_block,'cells per block')
-print('Feature vector length:', len(X_train[0]))
-# Use a linear SVC 
-svc = LinearSVC()
-# Check the training time for the SVC
-t=time.time()
-svc.fit(X_train, y_train)
-t2 = time.time()
-print(round(t2-t, 2), 'Seconds to train SVC...')
-# Check the score of the SVC
-print('Test Accuracy of SVC = ', round(svc.score(X_test, y_test), 4))
-
-
-def process_frame(myimg,cspace):
-
+    # Define the labels vector
+    y = np.hstack((np.ones(len(car_features)), np.zeros(len(notcar_features))))
     
-    if(cspace in {'RGB','YCrCb'}):
-        myimg1=myimg.astype(np.float32)/255
-    else:
-        myimg1=np.copy(myimg)
+    # Split up data into randomized training and test sets
+    rand_state = np.random.randint(0, 100)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=rand_state)
         
-    draw_image = np.copy(myimg1)
-    windows = slide_window(myimg1, x_start_stop=[None, None], y_start_stop=y_start_stop, 
-                    xy_window=(96, 96), xy_overlap=(0.5, 0.5))
+    # Fit a per-column scaler
+    X_scaler = StandardScaler().fit(X_train)
+    # Apply the scaler to X
+    X_train = X_scaler.transform(X_train)
+    X_test = X_scaler.transform(X_test)    
+    print('Using:',orient,'orientations',pix_per_cell,
+        'pixels per cell and', cell_per_block,'cells per block')
+    print('Feature vector length:', len(X_train[0]))
+    # Use a linear SVC 
+    svc = LinearSVC()
+    # Check the training time for the SVC
+    t=time.time()
+    svc.fit(X_train, y_train)
+    t2 = time.time()
+    print(round(t2-t, 2), 'Seconds to train SVC...')
+    # Check the score of the SVC
+    print('Test Accuracy of SVC = ', round(svc.score(X_test, y_test), 4))
+    if(debug_save_model==1):
+        pickle.dump(svc, open(model_filename, 'wb'))  
+        pickle.dump(X_scaler, open(scaler_filename, 'wb'))         
+else:
+    print("loading SVM model and standardScaler...")
+    svc = pickle.load(open(model_filename, 'rb'))
+    X_scaler = pickle.load(open(scaler_filename, 'rb'))
+    print("load done")
 
-    hot_windows = search_windows(myimg1, windows, svc, X_scaler, color_space=cspace, 
+    
+
+
+    
+ystart = y_start_stop[0]
+ystop = y_start_stop[1]
+scales=[1,1.5,2]
+  
+
+frame=0
+heat = []
+heat_threshold=5
+first_frame=True
+ 
+    
+def process_frame_1(myimg):
+
+    draw_image = np.copy(myimg)
+    windows = slide_window(myimg, x_start_stop=[None, None], y_start_stop=y_start_stop, 
+                    xy_window=(96, 96), xy_overlap=(0.7, 0.7))
+
+    hot_windows = search_windows(myimg, windows, svc, X_scaler, color_space=color_space, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
                         orient=orient, pix_per_cell=pix_per_cell, 
                         cell_per_block=cell_per_block, 
@@ -136,21 +155,48 @@ def process_frame(myimg,cspace):
     window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)                    
     return window_img
 
+def process_frame_2(myimg):
+    global frame
+    global heat
+    global first_frame
+    if(first_frame):
+        img_tosearch = myimg[ystart:ystop,:,:]
+        heat = np.zeros_like(img_tosearch[:,:,0]).astype(np.float)
 
+    
+    new_heat,out_img = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold,heat)                      
+
+    if(frame%5==0):
+        heat[(heat <= 4*heat_threshold) | (new_heat<=heat_threshold)] = 0
+    
+    first_frame=False
+    frame+=1
+    return out_img
+    
+    
+    
 image = mpimg.imread('test_images/test6.jpg')
 
-image = image.astype(np.float32)/255
-
-res_image= process_frame(image,color_space)
+res_image= process_frame_2(image)
 
 # Uncomment the following line if you extracted training
 # data from .png images (scaled 0 to 1 by mpimg) and the
 # image you are searching is a .jpg (scaled 0 to 255)
-image = image.astype(np.float32)/255
+#image = image.astype(np.float32)/255
 
 plt.imsave("output_images/test6_window.jpg",res_image)
 
-
+## run on video
+# Import everything needed to edit/save/watch video clips
+from moviepy.editor import VideoFileClip
+from IPython.display import HTML
+video_name='test_video'
+first_frame=True  
+if(debug_read_video==1):
+    white_output = video_name+'_vehicle_det.mp4'
+    clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,5)
+    white_clip = clip1.fl_image(process_frame_2)
+    white_clip.write_videofile(white_output, audio=False)
 
 
 
