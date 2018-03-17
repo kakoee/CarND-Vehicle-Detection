@@ -19,7 +19,7 @@ import pickle
 ## debug
 debug_train=0
 debug_save_model =1
-debug_read_video=0
+debug_read_video=1
 ##
 
 
@@ -77,7 +77,7 @@ hog_feat = True # HOG features on or off
 y_start_stop = [350, 700] # Min and max in y to search in slide_window()
 xstart=0
 
-model_filename = 'finalized_model.sav'
+model_filename = 'finalized_model_gridsrch_hsv.sav'
 scaler_filename = 'finalized_scaler.std'
 
 
@@ -147,7 +147,7 @@ scales=[1,1.5,2]
 frame=0
 heat_zero = []
 heat_frames=[0,0,0,0,0]
-heat_threshold=4
+heat_threshold=3
 first_frame=True
 
 
@@ -206,6 +206,8 @@ def process_frame(myimg):
     first_frame=False
     frame+=1
     if(frame==10):
+        for i in range(0,6):       
+            heat_frames[i] = heat_zero
         frame=0
     
     return out_img
@@ -220,7 +222,9 @@ if(debug_read_video==0):
         res_image= process_image(image)
         #image = image.astype(np.float32)/255
         filename=os.path.basename(image_f)
-        plt.imsave("output_images/"+filename,res_image)
+        filename=filename.split('.')[0]
+        plt.imsave("output_images/"+filename+'_w.png',res_image)
+        #break
 
 ## run on video
 # Import everything needed to edit/save/watch video clips
@@ -231,7 +235,7 @@ video_name='project_video'#'project_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
-    clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,32)
+    clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,2)
     white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 
