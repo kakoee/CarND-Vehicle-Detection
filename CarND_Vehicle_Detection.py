@@ -19,7 +19,7 @@ import pickle
 ## debug
 debug_train=0
 debug_save_model =1
-debug_read_video=1
+debug_read_video=0
 ##
 
 

@@ -86,6 +86,7 @@ I also add heatmap thresholding to remove false positives and to give focus on t
 Here are some example images:
 
 output_images/test6_window.jpg
+output_images/test4_window.jpg
 
 
 ### Video Implementation
