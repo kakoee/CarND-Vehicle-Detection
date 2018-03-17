@@ -45,7 +45,7 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 examples/cor_not_car.png
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  
-I chose pix_per_cell=16 to have faster runtime. I tried RGB, LUV, HSV, YCrCb color spaces and finally I chose HSV as it gave me better accuracy. I achieved accuracy of 98.5%.
+I chose pix_per_cell=16 to have faster runtime. I tried RGB, LUV, HSV, YCrCb color spaces and finally I chose HSV as it gave me better accuracy. I achieved accuracy of 98.5% with LinearSVC and 99.5% with GridsearchCV. both models are saved in the root folder.
 
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
@@ -54,7 +54,7 @@ I tried various combinations of parameters and and evaluate how they affect trai
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using LinearSVS function. I also tried a GridSearchCV classifier for SVM. which gave me a very good accuracy of 99.1%. but, the model took long time to predict so I switched to the LinearSVC with 98.5% accuracy. 
+I trained a linear SVM using LinearSVS function. I also tried a GridSearchCV classifier for SVM. which gave me a very good accuracy of 99.1%. but, the model took long time to predict. 
 Also, to improve the accuracy I cropped two car images from test3.jpg and test5.jpg. and feed those custom samples to the classifier for better training. This was because I could not predict those test images well. So, I decided to add them to the training set. Here is those new training files:
 test_images/Train1.png
 test_images/Train2.png
@@ -80,13 +80,13 @@ I used window size of 64 with three scaling (1,1.5,2) I choose these scaling by 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Ultimately I searched on three scales using HSV 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided good result.  
-I also add heatmap thresholding to remove false positives and to give focus on the true findings. Also, I used the "decision_function" of the classifier to only focus on those findings that had high confidence (large distance from the classification line). This can be seen in find_cars function in all_functions.py
+I also add heatmap thresholding to remove false positives and to give focus on the true findings. Also, for the LinearSVC I used the "decision_function" of the classifier to only focus on those findings that had high confidence (large distance from the classification line). This can be seen in find_cars function in all_functions.py. But for GridsearchCV I did not have to use that as it gave me good prediction.
 
 
 Here are some example images:
 
-output_images/test6_window.jpg
-output_images/test4_window.jpg
+output_images/*_w.png
+
 
 
 ### Video Implementation
@@ -103,7 +103,6 @@ TO get better and smooth results on the video, I created a moving heatmap based 
 This can be seen in the main file function "process_frame" lines 195-211
 
 
----
 
 ### Discussion
 
