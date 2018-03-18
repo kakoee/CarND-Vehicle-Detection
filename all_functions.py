@@ -268,11 +268,11 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                 test_features = X_scaler.transform(np.hstack((spatial_features, hist_features, hog_features)).reshape(1, -1))    
                 #test_features = X_scaler.transform(np.hstack((shape_feat, hist_feat)).reshape(1, -1))  
 
-                #decision_func = svc.decision_function(test_features)
+                decision_func = svc.decision_function(test_features)
                 test_prediction = svc.predict(test_features)
 
                 
-                if ((test_prediction == 1)):# and abs(decision_func)>0.05):
+                if ((test_prediction == 1) and abs(decision_func)>0.4):
                     #print(abs(decision_func))
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)
@@ -280,16 +280,11 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                     box_list.append(((xbox_left, ytop_draw),(xbox_left+win_draw, ytop_draw+win_draw)))
     
                 #cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,0,255),6) 
-    
-    # Add heat to each box in box list
-    #heat = add_heat(heat,box_list)
-        
-    # Apply threshold to help remove false positives
-    #heat = apply_threshold(heat,heat_threshold)
-    
+  
     new_heat = add_heat(new_heat,box_list)
+
     new_heat = apply_threshold(new_heat,heat_threshold)
-    
+       
     return new_heat   
   
 def draw_hit_map(myimg,ystart,xstart,heat):
@@ -423,3 +418,25 @@ def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
         cv2.rectangle(imcopy, bbox[0], bbox[1], color, thick)
     # Return the image copy with boxes drawn
     return imcopy
+
+
+#define a funciton to crop NxN images from a bigger image
+def crop_images(imgfile,window=64):
+    img = cv2.imread(imgfile)
+    Num_y = (int)(img.shape[0]/window)
+    Num_x = (int)(img.shape[1]/window)
+    images=[]
+    for j in range(0,Num_y):
+        for i in range(0,Num_x):
+            top_left= (j*window,i*window)
+            crop_img = img[j*window:((j+1)*window), i*window:((i+1)*window)]
+            images.append(crop_img)
+ 
+
+    return images
+
+
+
+
+
+

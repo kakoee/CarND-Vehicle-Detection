@@ -19,7 +19,8 @@ import pickle
 ## debug
 debug_train=0
 debug_save_model =1
-debug_read_video=0
+debug_read_video=1
+debug_custom_train_extract=1
 ##
 
 
@@ -57,14 +58,25 @@ np.random.shuffle(notcars)
 
 cars=cars[0:(int)(len(cars)/2)]
  
-#custom_train
+#custom_train_car
 images_cars_custom = glob.glob('./test_images/Train*')
 for image in images_cars_custom:
     cars.append(image)
 
+#custom_train_nocar
+if(debug_custom_train_extract==1):
+    images_notcars_custom = glob.glob('./test_images_nocar/*.jpg')
+    cnt=0
+    for imagename in images_notcars_custom:
+        not_cars_c=crop_images(imagename,64)
+        cnt+=1
+        for index,image in enumerate(not_cars_c):
+            filename="custom_train_set/custom_nocar"+str(cnt)+"_"+str(index)+".png"
+            cv2.imwrite(filename,image)
+            notcars.append(filename)
 
  
-color_space = 'HSV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 11  # HOG orientations
 pix_per_cell = 16 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
@@ -77,7 +89,7 @@ hog_feat = True # HOG features on or off
 y_start_stop = [350, 700] # Min and max in y to search in slide_window()
 xstart=0
 
-model_filename = 'finalized_model_gridsrch_hsv.sav'
+model_filename = 'finalized_model_YCrCb.sav'
 scaler_filename = 'finalized_scaler.std'
 
 
@@ -117,7 +129,7 @@ if(debug_train==1):
     # Use SVM with gridsearch 
     #parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
     #svr = svm.SVC(kernel='rbf',C=10)
-    #svc = svr#GridSearchCV(svr, parameters)
+    #svc = GridSearchCV(svr, parameters)
     svc = LinearSVC()
     # Check the training time for the SVC
     t=time.time()
@@ -134,8 +146,10 @@ else:
     svc = pickle.load(open(model_filename, 'rb'))
     X_scaler = pickle.load(open(scaler_filename, 'rb'))
     print("load done")
+    print(svc)
 
-    
+
+  
 
 
     
@@ -149,6 +163,7 @@ heat_zero = []
 heat_frames=[0,0,0,0,0]
 heat_threshold=3
 first_frame=True
+frame_history=10
 
 
 def process_image(myimg):
@@ -192,22 +207,24 @@ def process_frame(myimg):
     new_heat = find_cars(myimg, color_space, ystart, ystop, xstart,scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,heat_threshold)                      
 
     
-    heat_frames[frame%10] = new_heat
+    heat_frames[frame%frame_history] = new_heat
     heat_sum = heat_zero
     #for heat_frame in heat_frames:
     #heat_sum = heat_frames[0] + heat_frames[1] + heat_frames[2] + heat_frames[3] + heat_frames[4] + heat_frames[5] + \
                 #heat_frames[6] + heat_frames[7] + heat_frames[8] + heat_frames[9] 
                 
     heat_sum = np.sum(heat_frames, axis=0)
-    heat_sum = apply_threshold(heat_sum,heat_threshold*5)
+    heat_sum = apply_threshold(heat_sum,heat_threshold*10)
     out_img=draw_hit_map(myimg,ystart,xstart,heat_sum)
     #out_img=draw_hit_map(myimg,ystart,xstart,new_heat)
     
     first_frame=False
     frame+=1
-    if(frame==10):
-        for i in range(0,6):       
-            heat_frames[i] = heat_zero
+    if(frame==frame_history):
+        for i in range(0,(int)(frame_history/2)):       
+            heat_frames[i] = (heat_frames[i]/4)
+        #for i in range((int)(frame_history/2),frame_history):       
+        #    heat_frames[i] = (heat_frames[i]/2)
         frame=0
     
     return out_img
@@ -235,7 +252,9 @@ video_name='project_video'#'project_video'
 first_frame=True  
 if(debug_read_video==1):
     white_output = video_name+'_vehicle_det.mp4'
-    clip1 = VideoFileClip(video_name+".mp4")#.subclip(0,2)
+    clip1 = VideoFileClip(video_name+".mp4")#.subclip(20,23)
+    #clip1.save_frame('test_images/car6.png',10)
+    #clip1.save_frame('test_images/car7.png',11)
     white_clip = clip1.fl_image(process_frame)
     white_clip.write_videofile(white_output, audio=False)
 

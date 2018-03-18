@@ -42,7 +42,7 @@ I have two code file. one contains the main CV functions which is "all_function.
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
-examples/cor_not_car.png
+examples/car_not_car.png
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  
 I chose pix_per_cell=16 to have faster runtime. I tried RGB, LUV, HSV, YCrCb color spaces and finally I chose HSV as it gave me better accuracy. I achieved accuracy of 98.5% with LinearSVC and 99.5% with GridsearchCV. both models are saved in the root folder.
@@ -59,14 +59,20 @@ Also, to improve the accuracy I cropped two car images from test3.jpg and test5.
 test_images/Train1.png
 test_images/Train2.png
 
+Also, I created a nocar version of test images and extracted training set for them for the notcar class (test_images_nocar folder). The new training set are extracted in below folder. (I wrote a function in all_function.py for that(crop_images).)
+new training set folder: "custom_train_set"
+
+
 After the training I used Pickle module to save the model and load it for the later runs.
 I saved multiple models as follow which are in the root of the project:
 finalized_model_gridsrch_hsv.sav
 finalized_model_YCrCb.sav
+finalized_model_yuv.sav
 finalized_model.sav
 
 
 I also used randomized and scalar for the data. on the line 104-113 of main file. I saved the StandardScalar for later usage.
+"finalized_scaler.std"
 
 
 ### Sliding Window Search
