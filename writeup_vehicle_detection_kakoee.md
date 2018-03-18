@@ -45,7 +45,7 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 examples/car_not_car.png
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  
-I chose pix_per_cell=16 to have faster runtime. I tried RGB, LUV, HSV, YCrCb color spaces and finally I chose HSV as it gave me better accuracy. I achieved accuracy of 98.5% with LinearSVC and 99.5% with GridsearchCV. both models are saved in the root folder.
+I chose pix_per_cell=16 to have faster runtime. I tried RGB, LUV, HSV, YCrCb color spaces and finally I chose YCrCb as it gave me better accuracy. I achieved accuracy of 98.5% with LinearSVC and 99.5% with GridsearchCV (SVM with RBF kernel). both models are saved in the root folder.
 
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
@@ -54,13 +54,15 @@ I tried various combinations of parameters and and evaluate how they affect trai
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using LinearSVS function. I also tried a GridSearchCV classifier for SVM. which gave me a very good accuracy of 99.1%. but, the model took long time to predict. 
+I trained a linear SVM using LinearSVS function. I also tried a GridSearchCV classifier for SVM. which gave me a very good accuracy of 99.1%. but, the model took long time to predict. I finally used SVM with kernel=RBF (with YCrCb colorspace). the results were much better than LinearSVC. But, the training and prediction took longer. All the models I tried are in the root of repository with extension "*.sav"
+
 Also, to improve the accuracy I cropped two car images from test3.jpg and test5.jpg. and feed those custom samples to the classifier for better training. This was because I could not predict those test images well. So, I decided to add them to the training set. Here is those new training files:
-test_images/Train1.png
-test_images/Train2.png
+test_images/Train*.png
+
 
 Also, I created a nocar version of test images and extracted training set for them for the notcar class (test_images_nocar folder). The new training set are extracted in below folder. (I wrote a function in all_function.py for that(crop_images).)
-new training set folder: "custom_train_set"
+new training set folder: 
+"custom_train_set"
 
 
 After the training I used Pickle module to save the model and load it for the later runs.
@@ -68,7 +70,9 @@ I saved multiple models as follow which are in the root of the project:
 finalized_model_gridsrch_hsv.sav
 finalized_model_YCrCb.sav
 finalized_model_yuv.sav
-finalized_model.sav
+
+finally used:
+"finalized_model_rbf_YCrCb.sav"
 
 
 I also used randomized and scalar for the data. on the line 104-113 of main file. I saved the StandardScalar for later usage.

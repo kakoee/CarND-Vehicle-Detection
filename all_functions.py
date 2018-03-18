@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from skimage.feature import hog
 from scipy.ndimage.measurements import label
+import sklearn
 
 # Define a function to return HOG features and visualization
 def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
@@ -269,7 +270,8 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
                 #test_features = X_scaler.transform(np.hstack((shape_feat, hist_feat)).reshape(1, -1))  
 
                 #decision_func = svc.decision_function(test_features)
-                test_prediction = svc.predict(test_features)
+                with sklearn.config_context(assume_finite=True):
+                    test_prediction = svc.predict(test_features)
                 #print(test_prediction)
                 
                 if ((test_prediction == 1)):# and abs(decision_func)>0.4):

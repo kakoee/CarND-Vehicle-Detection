@@ -16,10 +16,13 @@ from sklearn.model_selection import train_test_split
 import pickle
 #from sklearn.cross_validation import train_test_split
 
+
+
+
 ## debug
 debug_train=0
 debug_save_model =1
-debug_read_video=0
+debug_read_video=1
 debug_custom_train_extract=0
 ##
 
@@ -93,7 +96,7 @@ hog_feat = True # HOG features on or off
 y_start_stop = [350, 700] # Min and max in y to search in slide_window()
 xstart=0
 
-model_filename = 'finalized_model_GridSearch_YCrCb.sav'
+model_filename = 'finalized_model_rbf_YCrCb.sav'
 scaler_filename = 'finalized_scaler.std'
 
 

@@ -93,8 +93,10 @@ hog_feat = True # HOG features on or off
 y_start_stop = [350, 700] # Min and max in y to search in slide_window()
 xstart=0
 
-model_filename = 'finalized_model_GridSearch_YCrCb.sav'
+#model_filename = 'finalized_model_GridSearch_YCrCb.sav'
+model_filename = 'finalized_model_rbf_YCrCb.sav'
 scaler_filename = 'finalized_scaler.std'
+
 
 
 if(debug_train==1):
@@ -131,9 +133,11 @@ if(debug_train==1):
         'pixels per cell and', cell_per_block,'cells per block')
     print('Feature vector length:', len(X_train[0]))
     # Use SVM with gridsearch 
-    parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-    svr = svm.SVC()
-    svc = GridSearchCV(svr, parameters)
+#    parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+    svr = svm.SVC(kernel='rbf',C=1)
+    
+#   svc = GridSearchCV(svr, parameters)
+    svc=svr
     #svc = LinearSVC()
     # Check the training time for the SVC
     t=time.time()
