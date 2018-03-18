@@ -9,6 +9,7 @@ final changes:
 -tweak thresholds of single frame as well as multi frame FIFO. 
 - after circular FIFO went one round, reduce the weight of first half of FIFO by 1/4 to reduce the effect of older frames. see line 231-235 of main code file
 - finally the results are good on all test images as well as project video and test video
+- I also combined this project with Advanced Lane detection project. The result is in "project_video_vehicle_det_lane_marked.mp4" video
 
 
 
@@ -109,6 +110,8 @@ output_images/*_w.png
 
 
 ### Video Implementation
+
+Note: I also combined this project with Advanced Lane detection project. The result is in "project_video_vehicle_det_lane_marked.mp4" video
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
 Here's a [link to my video result](./project_video_vehicle_det.mp4)
