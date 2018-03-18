@@ -3,6 +3,15 @@
 
 ---
 
+final changes:
+- developed new classifier. SVC with RBF kernel and YCrCb cspace
+- Mined false positive and false negative images. see line 64-78 of main code file. created new folder with custom notcar images
+-tweak thresholds of single frame as well as multi frame FIFO. 
+- after circular FIFO went one round, reduce the weight of first half of FIFO by 1/4 to reduce the effect of older frames. see line 231-235 of main code file
+- finally the results are good on all test images as well as project video and test video
+
+
+
 **Vehicle Detection Project**
 
 The goals / steps of this project are the following:
