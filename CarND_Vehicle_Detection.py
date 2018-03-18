@@ -20,7 +20,7 @@ import pickle
 debug_train=0
 debug_save_model =1
 debug_read_video=1
-debug_custom_train_extract=1
+debug_custom_train_extract=0
 ##
 
 
@@ -63,7 +63,7 @@ images_cars_custom = glob.glob('./test_images/Train*')
 for image in images_cars_custom:
     cars.append(image)
 
-#custom_train_nocar
+#custom_train_nocar extraction
 if(debug_custom_train_extract==1):
     images_notcars_custom = glob.glob('./test_images_nocar/*.jpg')
     cnt=0
@@ -73,7 +73,11 @@ if(debug_custom_train_extract==1):
         for index,image in enumerate(not_cars_c):
             filename="custom_train_set/custom_nocar"+str(cnt)+"_"+str(index)+".png"
             cv2.imwrite(filename,image)
-            notcars.append(filename)
+
+#custom_train_notcar
+images_notcars_custom = glob.glob('./custom_train_set/custom_nocar*')
+for image in images_notcars_custom:
+    notcars.append(image)
 
  
 color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
