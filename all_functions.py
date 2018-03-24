@@ -1,3 +1,5 @@
+# written by Mohammad Reza Kakoee 
+
 import matplotlib.image as mpimg
 import numpy as np
 import cv2
@@ -288,7 +290,89 @@ def find_cars(img, color_space, ystart, ystop, xstart,scales, svc, X_scaler, ori
     new_heat = apply_threshold(new_heat,heat_threshold)
        
     return new_heat   
+
+
+# Define a single function that can extract features using hog sub-sampling and make predictions
+def find_cars_NN(img, color_space, ystart, ystop, xstart,scales, model, pix_per_cell, cell_per_block, heat_threshold):
+    
+    draw_img = np.copy(img)
+    #img = img.astype(np.float32)/255
+    
+    img_tosearch = img[ystart:ystop,:,:]
+    if color_space != 'RGB':
+            if color_space == 'HSV':
+                ctrans_tosearch_orig = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2HSV)
+            elif color_space == 'LUV':                        
+                ctrans_tosearch_orig = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2LUV)
+            elif color_space == 'HLS':                        
+                ctrans_tosearch_orig = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2HLS)
+            elif color_space == 'YUV':                        
+                ctrans_tosearch_orig = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2YUV)
+            elif color_space == 'YCrCb':                      
+                ctrans_tosearch_orig = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2YCrCb)
+    else: 
+            ctrans_tosearch_orig = np.copy(img_tosearch)    
+    
+    box_list = []  
+    new_heat = np.zeros_like(img_tosearch[:,:,0]).astype(np.float)
+    for scale in scales:
+        ctrans_tosearch = np.copy(ctrans_tosearch_orig)
+        if scale != 1:
+            imshape = ctrans_tosearch.shape
+            ctrans_tosearch = cv2.resize(ctrans_tosearch, (np.int(imshape[1]/scale), np.int(imshape[0]/scale)))
+            
+        ch1 = ctrans_tosearch[:,:,0]
+        ch2 = ctrans_tosearch[:,:,1]
+        ch3 = ctrans_tosearch[:,:,2]
+    
+        # Define blocks and steps as above
+        nxblocks = (ch1.shape[1] // pix_per_cell) - cell_per_block + 1
+        nyblocks = (ch1.shape[0] // pix_per_cell) - cell_per_block + 1 
+        
+        # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
+        window = 64
+        nblocks_per_window = (window // pix_per_cell) - cell_per_block + 1
+        cells_per_step = 1  # Instead of overlap, define how many cells to step
+        nxsteps = (int)((nxblocks - nblocks_per_window) // cells_per_step + 1)
+        nysteps = (int)((nyblocks - nblocks_per_window) // cells_per_step + 1)
+        
+   
+
+        #heat = np.zeros_like(ctrans_tosearch[:,:,0]).astype(np.float)
+    
+        for xb in range(nxsteps):
+            for yb in range(nysteps):
+                ypos = (int)(yb*cells_per_step)
+                xpos = (int)(xb*cells_per_step)
+     
+                xleft = xpos*pix_per_cell
+                ytop = ypos*pix_per_cell
+    
+                # Extract the image patch
+                subimg = cv2.resize(ctrans_tosearch[ytop:ytop+window, xleft:xleft+window], (64,64))
+            
+                img_array= np.array([subimg])
+                #print(img_array.shape)
+        
+                test_prediction = model.predict(img_array)
+                #print(test_prediction[0])
+                
+                if ((test_prediction[0] >= 0.75)):# and abs(decision_func)>0.4):
+                    #print(abs(decision_func))
+                    xbox_left = np.int(xleft*scale)
+                    ytop_draw = np.int(ytop*scale)
+                    win_draw = np.int(window*scale)
+                    box_list.append(((xbox_left, ytop_draw),(xbox_left+win_draw, ytop_draw+win_draw)))
+    
   
+    new_heat = add_heat(new_heat,box_list)
+
+    new_heat = apply_threshold(new_heat,heat_threshold)
+       
+    return new_heat
+    
+
+    
 def draw_hit_map(myimg,ystart,xstart,heat):
     heatmap = np.clip(heat, 0, 255)
     
