@@ -361,7 +361,7 @@ def find_cars_NN(img, color_space, ystart, ystop, xstart,scales, model, pix_per_
                 #ytop_array=np.append(ytop_array,ytop)
                 #print(img_array.shape)
         
-                #batch prediction! instead of one by one subimg prediction
+                #batch prediction! instead of one by one subimg prediction.
                 test_prediction = model.predict(np.array([subimg]))
                 #test_prediction = np.squeeze(test_prediction)
                 #for index, item in enumerate(test_prediction):
