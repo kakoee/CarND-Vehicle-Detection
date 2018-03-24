@@ -339,10 +339,11 @@ def find_cars_NN(img, color_space, ystart, ystop, xstart,scales, model, pix_per_
    
 
         #heat = np.zeros_like(ctrans_tosearch[:,:,0]).astype(np.float)
-        img_array= np.empty([0,64,64,3])
-        xleft_array= np.empty(0)
-        ytop_array=np.empty(0)
+
         for xb in range(nxsteps):
+            img_array= np.empty([0,64,64,3])
+            xleft_array= np.empty(0)
+            ytop_array=np.empty(0)
             for yb in range(nysteps):
                 ypos = (int)(yb*cells_per_step)
                 xpos = (int)(xb*cells_per_step)
@@ -351,27 +352,27 @@ def find_cars_NN(img, color_space, ystart, ystop, xstart,scales, model, pix_per_
                 ytop = ypos*pix_per_cell
     
                 # Extract the image patch
-                subimg = cv2.resize(ctrans_tosearch[ytop:ytop+window, xleft:xleft+window], (64,64))
+                #subimg = cv2.resize(ctrans_tosearch[ytop:ytop+window, xleft:xleft+window], (64,64))
+                subimg = ctrans_tosearch[ytop:ytop+window, xleft:xleft+window]
             
-                img_array=np.append(img_array,np.array([subimg]),axis=0)
+                #img_array=np.append(img_array,np.array([subimg]),axis=0)
                 #print(img_array.shape)
-                xleft_array=np.append(xleft_array,xleft)
-                ytop_array=np.append(ytop_array,ytop)
+                #xleft_array=np.append(xleft_array,xleft)
+                #ytop_array=np.append(ytop_array,ytop)
                 #print(img_array.shape)
         
-        #batch prediction! instead of one by one subimg prediction
-        test_prediction = model.predict(img_array)
-        test_prediction = np.squeeze(test_prediction)
-         
-        for index, item in enumerate(test_prediction):
-            if ((item >= 0.75)):# and abs(decision_func)>0.4):
-                    #print(abs(decision_func))
-                xleft = xleft_array[index]
-                ytop = ytop_array[index]
-                xbox_left = np.int(xleft*scale)
-                ytop_draw = np.int(ytop*scale)
-                win_draw = np.int(window*scale)
-                box_list.append(((xbox_left, ytop_draw),(xbox_left+win_draw, ytop_draw+win_draw)))
+                #batch prediction! instead of one by one subimg prediction
+                test_prediction = model.predict(np.array([subimg]))
+                #test_prediction = np.squeeze(test_prediction)
+                #for index, item in enumerate(test_prediction):
+                if ((test_prediction[0] >= 0.75)):# and abs(decision_func)>0.4):
+                            #print(abs(decision_func))
+                        #xleft = xleft_array[index]
+                        #ytop = ytop_array[index]
+                        xbox_left = np.int(xleft*scale)
+                        ytop_draw = np.int(ytop*scale)
+                        win_draw = np.int(window*scale)
+                        box_list.append(((xbox_left, ytop_draw),(xbox_left+win_draw, ytop_draw+win_draw)))
     
   
     new_heat = add_heat(new_heat,box_list)
