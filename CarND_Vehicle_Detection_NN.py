@@ -22,7 +22,7 @@ import pickle
 
 
 ## debug
-debug_read_video=0
+debug_read_video=1
 
 color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 pix_per_cell = 16 # HOG pixels per cell
